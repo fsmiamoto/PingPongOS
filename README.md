@@ -7,8 +7,9 @@ Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:
 ## Currently implemented:
 
 - Queue library
+- Basic task control
 
 ```bash
-# To test it...
-$ gcc test/queue.c queue.c -o test_queue && ./test_queue
+# Testing
+$ cd task_control && make test
 ```
