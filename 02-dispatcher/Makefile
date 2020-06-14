@@ -10,7 +10,7 @@ $(TEST_DIR)/%.c: all
 	$(CC) $(CFLAGS) $@ $(OBJ) -o $(@:.c=.bin)
 
 test: $(TEST_DIR)/*.c
-	@$(TEST_DIR)/bin/run.sh $(TEST_DIR)
+	@$(TEST_DIR)/bin/run-tests.sh $(TEST_DIR)
 
 clean:
 	rm -rf *.o

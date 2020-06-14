@@ -3,11 +3,18 @@
 # Runs the tests on the given directory
 # github.com/fsmiamoto
 #
-# Example:
-# $ ./run.sh $MY_TEST_DIR
-#
-# Each test is composed of a executable binary and a '.expect.txt' file
+# Each test is composed of a executable file '.bin' and a '.expect.txt' file
 # The binaries are executed and the outputs are compared to the correspondent '.expect.txt'
+#
+# Example:
+# Given following file tree:
+# ./tests
+# ├── dispatcher.bin
+# ├── dispatcher.expect.txt
+# ├── tasks.bin
+# └── tasks.expect.txt
+#
+# $ ./run.sh ./tests
 #
 
 TEST_DIR="$1"
