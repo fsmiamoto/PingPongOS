@@ -14,8 +14,8 @@
 # ├── tasks.bin
 # └── tasks.expect.txt
 #
+# You can run the following:
 # $ ./run.sh ./tests
-#
 
 TEST_DIR="$1"
 
