@@ -38,12 +38,13 @@ for bin in $(ls $TEST_DIR/*.bin); do \
 
     diff --color=auto "$got" "$expect" > /dev/null
 
-    if [ "$?" = "0" ]; then
-        echo -e "${GREEN}PASSED${NC}: ${name}"
-    else
+    if [ ! "$?" = "0" ]; then
         echo -e "${RED}FAILED${NC}: ${name}"
         diff --color=auto "$got" "$expect"
+        continue
     fi
+
+    echo -e "${GREEN}PASSED${NC}: ${name}"
 done
 
 printf %"$COLUMNS"s |tr " " "-"
