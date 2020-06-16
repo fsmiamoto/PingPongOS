@@ -1,1 +1,1 @@
-/home/shigueo/dev/pingpongOS/run-tests.sh
+../../../run-tests.sh
