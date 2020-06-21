@@ -4,7 +4,7 @@
 
 // Teste da gestão básica de tarefas
 
-#include "ppos.h"
+#include "../ppos.h"
 #include <stdio.h>
 #include <stdlib.h>
 

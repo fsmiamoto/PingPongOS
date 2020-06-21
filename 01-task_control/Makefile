@@ -1,26 +1,28 @@
 CC = gcc
 CFLAGS = -Wall
-TESTS = tasks1 tasks2 tasks3
-OBJ = ppos_core.o
+LD = ld
+LDFLAGS = --relocatable
+OBJ = ppos.o
 
-all: ppos_core.c ppos.h ppos_data.h
-	$(CC) $(CFLAGS) -c ppos_core.c -o $(OBJ)
+TEST_DIR= ./tests
 
-tasks%: all pingpong-tasks%.c
-	$(CC) $(CFLAGS) pingpong-$@.c $(OBJ) -o $@
+all: ppos_core.o queue.o
+	$(LD) $(LDFLAGS) $^ -o $(OBJ)
 
-test: $(TESTS)
-	@echo "--------------------------------------------------------------------------------"
-	@echo "TESTS: $(TESTS)"
-	@echo "--------------------------------------------------------------------------------"
-	@for t in $(TESTS); do \
-		./"$$t" > "$$t.output.txt"; \
-		./assert_equal.sh "$$t.output.txt" "$$t.expect.txt"; \
-		rm "$$t.output.txt"; \
-	done
-	@echo "--------------------------------------------------------------------------------"
+ppos_core.o: ppos_core.c ppos.h ppos_data.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+queue.o: queue.c queue.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TEST_DIR)/%.c: all
+	-$(CC) $(CFLAGS) $@ $(OBJ) -o $(@:.c=.bin)
+
+test: $(TEST_DIR)/*.c
+	$(TEST_DIR)/bin/run-tests.sh $(TEST_DIR)
 
 clean:
-	rm -rf *.o $(TESTS)
+	rm -rf *.o
+	rm -rf $(TEST_DIR)/*.bin $(TEST_DIR)/*.output.txt
 
 
