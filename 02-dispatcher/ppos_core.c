@@ -1,5 +1,6 @@
 #include "ppos.h"
 #include "ppos_data.h"
+#include "queue.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,9 +9,20 @@
 
 int next_task_id = 1; // IDs for other tasks start at 1
 task_t main_task;
+task_t dispatcher_task;
 task_t *current_task;
 
+// Task queues for each state:
+// Created, Ready, Running, Waiting, Terminated
+task_t *queues[] = {NULL, NULL, NULL, NULL, NULL};
+
+void dispatcher();
+task_t *scheduler();
+
 void ppos_init() {
+  // Deactivate the stdout buffer used by the printf function
+  setvbuf(stdout, 0, _IONBF, 0);
+
   main_task.id = 0;
   getcontext(&(main_task.context));
   main_task.next = NULL;
@@ -18,13 +30,10 @@ void ppos_init() {
 
   current_task = &main_task;
 
-  // Deactivate the stdout buffer used by the printf function
-  setvbuf(stdout, 0, _IONBF, 0);
+  task_create(&dispatcher_task, (void *)dispatcher, NULL);
 }
 
 int task_create(task_t *task, void (*start_routine)(void *), void *arg) {
-  current_task->next = task;
-
   getcontext(&(task->context));
 
   char *stack = malloc(STACKSIZE);
@@ -41,36 +50,88 @@ int task_create(task_t *task, void (*start_routine)(void *), void *arg) {
   makecontext(&(task->context), (void *)start_routine, 1, arg);
 
   task->id = next_task_id++;
-  task->prev = current_task;
+  task->prev = NULL;
+  task->next = NULL;
+  task->state = CREATED;
 
 #ifdef DEBUG
   printf("task_create: created task %d\n", task->id);
 #endif
 
+  if (task != &dispatcher_task) {
+    task->state = READY;
+    queue_append((queue_t **)&queues[READY], (queue_t *)task);
+  }
+
   return task->id;
 }
 
 int task_switch(task_t *task) {
-  task->prev = current_task;
-  current_task->next = task;
-
+  task_t *previous = current_task;
   current_task = task;
 
-  int status = swapcontext(&(task->prev->context), &(task->context));
+#ifdef DEBUG
+  printf("task_switch: changing context %d -> %d\n", previous->id, task->id);
+#endif
+
+  int status = swapcontext(&(previous->context), &(current_task->context));
   if (status < 0) {
     perror("task_switch: error on swapcontext call");
     return status;
   }
 
-#ifdef DEBUG
-  printf("task_switch: changing context %d -> %d\n", task->prev->id, task->id);
-#endif
-
   return 0;
 }
 
-void task_exit(int exit_code) { task_switch(&main_task); }
+void task_exit(int exit_code) {
+#ifdef DEBUG
+  printf("task_exit: exiting task %d\n", current_task->id);
+#endif
+
+  if (current_task == &dispatcher_task) {
+    task_switch(&main_task);
+    return;
+  }
+
+  current_task->state = TERMINATED;
+  task_switch(&dispatcher_task);
+}
 
 int task_id() { return current_task->id; }
 
-void task_yield() { return; }
+void task_yield() {
+#ifdef DEBUG
+  printf("task_yield: called from task %d\n", current_task->id);
+#endif
+
+  current_task->state = READY;
+  task_switch(&dispatcher_task);
+}
+
+// Get a pointer to next ready task, or NULL if there is no ready tasks.
+task_t *scheduler() {
+  if (queue_size((queue_t *)queues[READY]) == 0) {
+    return NULL;
+  }
+
+  return queues[READY];
+}
+
+// Dispatch tasks from the ready queue
+void dispatcher() {
+  while (1) {
+    task_t *next_ready = scheduler();
+
+    if (next_ready == NULL) {
+      break;
+    }
+
+    queue_remove((queue_t **)&queues[READY], (queue_t *)next_ready);
+    next_ready->state = RUNNING;
+    task_switch(next_ready);
+
+    queue_append((queue_t **)&queues[next_ready->state], (queue_t *)next_ready);
+  }
+
+  task_exit(0);
+}
