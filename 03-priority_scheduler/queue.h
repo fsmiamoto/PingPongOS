@@ -57,4 +57,19 @@ int queue_size(queue_t *queue);
 
 void queue_print(char *name, queue_t *queue, void print_elem(void *));
 
+//------------------------------------------------------------------------------
+// Percorre a fila aplicando a função a cada elemento da mesma
+//
+// O protótipo de func recebe um ponteiro para o elemento da fila
+// void func(void* ptr)
+
+void queue_foreach(queue_t *queue, void (*func)(void *));
+
+//------------------------------------------------------------------------------
+// Percorre a fila aplicando a função reducer a cada elemento da mesma
+//
+// O protótipo de func recebe um ponteiro para o acumulador e o elemento da fila
+// void* reducer(void* acc, void* elem)
+
+void *queue_reduce(queue_t *queue, void *acc, void *(*reduc)(void *, void *));
 #endif

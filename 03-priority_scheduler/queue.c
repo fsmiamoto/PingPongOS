@@ -105,16 +105,34 @@ int queue_size(queue_t *queue) {
 
 void queue_print(char *name, queue_t *queue, void (*print_elem)(void *)) {
   int size = queue_size(queue);
-  queue_t *currentElem = queue;
+  queue_t *current = queue;
 
   printf("%s: [", name);
-  for (int i = 0; i < size; i++, currentElem = currentElem->next) {
-    print_elem(currentElem);
+  for (int i = 0; i < queue_size(queue); i++) {
+    print_elem(current);
     if (i < size - 1) {
       printf(" ");
     }
+    current = current->next;
   }
   printf("]\n");
+}
+
+void queue_foreach(queue_t *queue, void (*func)(void *)) {
+  queue_t *current = queue;
+  for (int i = 0; i < queue_size(queue); i++) {
+    func(current);
+    current = current->next;
+  }
+}
+
+void *queue_reduce(queue_t *queue, void *acc, void *(*func)(void *, void *)) {
+  queue_t *current = queue;
+  for (int i = 0; i < queue_size(queue); i++) {
+    acc = func(acc, current);
+    current = current->next;
+  }
+  return acc;
 }
 
 // Returns the last element in the queue

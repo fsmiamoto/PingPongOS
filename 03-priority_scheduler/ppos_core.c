@@ -18,31 +18,23 @@ task_t *current_task;
 // Created, Ready, Running, Waiting, Terminated
 task_t *queues[] = {NULL, NULL, NULL, NULL, NULL};
 
+// Internal functions
+void *__highest_prio_task(void *prev, void *next);
+void __apply_aging(void *ptr);
+
 task_t *scheduler() {
   if (queue_size((queue_t *)queues[READY]) == 0) {
     return NULL;
   }
 
-  task_t *highest_prio = queues[READY];
-  task_t *next = queues[READY]->next;
+  task_t *choosen = (task_t *)queue_reduce((queue_t *)queues[READY], NULL,
+                                           __highest_prio_task);
 
-  do {
-    if (next->prio_d <= highest_prio->prio_d)
-      highest_prio = next;
-    next = next->next;
-  } while (next != queues[READY]);
+  queue_foreach((queue_t *)queues[READY], __apply_aging);
 
-  next = queues[READY];
-  do {
-    if (next->id != highest_prio->id) {
-      next->prio_d -= SCHEDULER_AGING_ALPHA;
-    }
-    next = next->next;
-  } while (next != queues[READY]);
+  choosen->prio_d = choosen->prio;
 
-  highest_prio->prio_d = highest_prio->prio;
-
-  return highest_prio;
+  return choosen;
 }
 
 void dispatcher() {
@@ -172,4 +164,25 @@ int task_getprio(task_t *task) {
   }
 
   return (int)task->prio;
+}
+
+// Return the task with the highest priority
+void *__highest_prio_task(void *prev, void *next) {
+  if (prev == NULL)
+    return next;
+
+  task_t *prev_task = (task_t *)prev;
+  task_t *next_task = (task_t *)next;
+
+  if (next_task->prio_d <= prev_task->prio_d) {
+    return next;
+  }
+
+  return prev_task;
+}
+
+// Apply the aging factor on tasks
+void __apply_aging(void *ptr) {
+  task_t *task = (task_t *)ptr;
+  task->prio_d -= SCHEDULER_AGING_ALPHA;
 }
