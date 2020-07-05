@@ -27,14 +27,14 @@ task_t *scheduler() {
     return NULL;
   }
 
-  task_t *choosen = (task_t *)queue_reduce((queue_t *)queues[READY], NULL,
-                                           __highest_prio_task);
+  task_t *chosen = (task_t *)queue_reduce((queue_t *)queues[READY], NULL,
+                                          __highest_prio_task);
 
   queue_foreach((queue_t *)queues[READY], __apply_aging);
 
-  choosen->prio_d = choosen->prio;
+  chosen->prio_d = chosen->prio;
 
-  return choosen;
+  return chosen;
 }
 
 void dispatcher() {
