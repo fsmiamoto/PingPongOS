@@ -7,6 +7,8 @@
 // Thread stack size
 #define STACKSIZE 32768
 
+#define SCHEDULER_AGING_ALPHA 1
+
 int next_task_id = 1; // IDs for other tasks start at 1
 task_t main_task;
 task_t dispatcher_task;
@@ -16,8 +18,50 @@ task_t *current_task;
 // Created, Ready, Running, Waiting, Terminated
 task_t *queues[] = {NULL, NULL, NULL, NULL, NULL};
 
-void dispatcher();
-task_t *scheduler();
+task_t *scheduler() {
+  if (queue_size((queue_t *)queues[READY]) == 0) {
+    return NULL;
+  }
+
+  task_t *highest_prio = queues[READY];
+  task_t *next = queues[READY]->next;
+
+  do {
+    if (next->prio_d <= highest_prio->prio_d)
+      highest_prio = next;
+    next = next->next;
+  } while (next != queues[READY]);
+
+  next = queues[READY];
+  do {
+    if (next->id != highest_prio->id) {
+      next->prio_d -= SCHEDULER_AGING_ALPHA;
+    }
+    next = next->next;
+  } while (next != queues[READY]);
+
+  highest_prio->prio_d = highest_prio->prio;
+
+  return highest_prio;
+}
+
+void dispatcher() {
+  while (1) {
+    task_t *next_ready = scheduler();
+
+    if (next_ready == NULL) {
+      break;
+    }
+
+    queue_remove((queue_t **)&queues[READY], (queue_t *)next_ready);
+    next_ready->state = RUNNING;
+    task_switch(next_ready);
+
+    queue_append((queue_t **)&queues[next_ready->state], (queue_t *)next_ready);
+  }
+
+  task_exit(0);
+}
 
 void ppos_init() {
   // Deactivate the stdout buffer used by the printf function
@@ -53,6 +97,8 @@ int task_create(task_t *task, void (*start_routine)(void *), void *arg) {
   task->prev = NULL;
   task->next = NULL;
   task->state = CREATED;
+  task->prio = 0;
+  task->prio_d = 0;
 
 #ifdef DEBUG
   printf("task_create: created task %d\n", task->id);
@@ -108,34 +154,22 @@ void task_yield() {
   task_switch(&dispatcher_task);
 }
 
-void task_setprio(task_t *task, int prio) { return; }
+void task_setprio(task_t *task, int prio) {
+  if (prio > 19 || prio < -20)
+    perror("task_setprio: invalid priority, must be between -20 and 19");
 
-int task_getprio(task_t *task) { return 0; }
-
-// Get a pointer to next ready task, or NULL if there is no ready tasks.
-task_t *scheduler() {
-  if (queue_size((queue_t *)queues[READY]) == 0) {
-    return NULL;
+  if (task == NULL) {
+    task = current_task;
   }
 
-  return queues[READY];
+  task->prio = (short)prio;
+  task->prio_d = (short)prio;
 }
 
-// Dispatch tasks from the ready queue
-void dispatcher() {
-  while (1) {
-    task_t *next_ready = scheduler();
-
-    if (next_ready == NULL) {
-      break;
-    }
-
-    queue_remove((queue_t **)&queues[READY], (queue_t *)next_ready);
-    next_ready->state = RUNNING;
-    task_switch(next_ready);
-
-    queue_append((queue_t **)&queues[next_ready->state], (queue_t *)next_ready);
+int task_getprio(task_t *task) {
+  if (task == NULL) {
+    task = current_task;
   }
 
-  task_exit(0);
+  return (int)task->prio;
 }

@@ -18,6 +18,8 @@ typedef struct task_t {
   int id;                     // identificador da tarefa
   ucontext_t context;         // contexto armazenado da tarefa
   State state;
+  short prio;
+  short prio_d;
 } task_t;
 
 // estrutura que define um semáforo
