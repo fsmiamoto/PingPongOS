@@ -36,7 +36,7 @@ for bin in $(ls $TEST_DIR/*.bin); do \
 
     $bin > "$got"
 
-    diff --color=auto "$got" "$expect" > /dev/null
+    diff -s "$got" "$expect" > /dev/null
 
     if [ ! "$?" = "0" ]; then
         echo -e "${RED}FAILED${NC}: ${name}"
