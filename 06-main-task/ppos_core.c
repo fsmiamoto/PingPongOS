@@ -7,11 +7,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-// Thread stack size
-#define STACKSIZE 32768
-
-#define SCHEDULER_AGING_ALPHA 1
-
 int next_task_id = 1; // IDs for other tasks start at 1
 unsigned int system_ticks_count = 0;
 
@@ -30,12 +25,13 @@ void ppos_init() {
   // Deactivate the stdout buffer used by the printf function
   setvbuf(stdout, 0, _IONBF, 0);
 
-  __set_up_main_task();
   __set_up_signals();
   __set_up_timer();
+  __set_up_and_queue_main_task();
   __create_dispatcher_task();
 
   current_task = &main_task;
+  task_switch(&dispatcher_task);
 }
 
 int task_create(task_t *task, void (*start_routine)(void *), void *arg) {
@@ -48,7 +44,7 @@ int task_create(task_t *task, void (*start_routine)(void *), void *arg) {
     task->context.uc_stack.ss_flags = 0;
     task->context.uc_link = 0;
   } else {
-    perror("task_create: error on stack allocation");
+    perror("task_create - malloc");
     return -1;
   }
 
@@ -62,7 +58,7 @@ int task_create(task_t *task, void (*start_routine)(void *), void *arg) {
   task->state = CREATED;
   task->prio = 0;
   task->prio_d = 0;
-  task->is_system_task = 0;
+  task->preemptible = 1;
 
 #ifdef DEBUG
   printf("task_create: created task %d\n", task->id);
@@ -86,7 +82,7 @@ int task_switch(task_t *task) {
 
   int status = swapcontext(&(previous->context), &(current_task->context));
   if (status < 0) {
-    perror("task_switch: error on swapcontext call");
+    perror("task_switch - swapcontext");
     return status;
   }
 
@@ -125,7 +121,8 @@ void task_yield() {
 
 void task_setprio(task_t *task, int prio) {
   if (prio > 19 || prio < -20)
-    perror("task_setprio: invalid priority, must be between -20 and 19");
+    fprintf(stderr,
+            "task_setprio: invalid priority, must be between -20 and 19");
 
   if (task == NULL) {
     task = current_task;
@@ -170,7 +167,7 @@ void dispatcher() {
 
     queue_remove((queue_t **)&queues[READY], (queue_t *)next);
     next->state = RUNNING;
-    next->tick_budget = 20;
+    next->tick_budget = DEFAULT_TICK_BUDGET;
     next->activations += 1;
     task_switch(next);
     queue_append((queue_t **)&queues[next->state], (queue_t *)next);
@@ -204,7 +201,7 @@ void __timer_tick_handler() {
   system_ticks_count++;
   current_task->tick_count++;
 
-  if (current_task->is_system_task)
+  if (!current_task->preemptible)
     return;
 
   current_task->tick_budget -= 1;
@@ -219,7 +216,7 @@ void __set_up_signals() {
   sigemptyset(&action.sa_mask);
   action.sa_flags = 0;
   if (sigaction(SIGALRM, &action, 0) < 0) {
-    perror("sigaction: ");
+    perror("sigaction");
     exit(1);
   }
 }
@@ -233,21 +230,30 @@ void __set_up_timer() {
 
   // man setitimer
   if (setitimer(ITIMER_REAL, &timer, 0) < 0) {
-    perror("setitimer: ");
+    perror("setitimer");
     exit(1);
   }
 }
 
-void __set_up_main_task() {
-  main_task.id = 0;
+void __set_up_and_queue_main_task() {
   getcontext(&(main_task.context));
+
+  main_task.id = 0;
   main_task.next = NULL;
   main_task.prev = NULL;
+  main_task.start_tick = systime();
+  main_task.activations = 0;
+  main_task.prio = 0;
+  main_task.prio_d = 0;
+  main_task.preemptible = 1;
+  main_task.state = READY;
+
+  queue_append((queue_t **)&queues[READY], (queue_t *)&main_task);
 }
 
 void __create_dispatcher_task() {
   task_create(&dispatcher_task, (void *)dispatcher, NULL);
-  dispatcher_task.is_system_task = 1;
+  dispatcher_task.preemptible = 0;
   dispatcher_task.tick_count = 0;
   dispatcher_task.activations = 0;
   dispatcher_task.start_tick = systime();
