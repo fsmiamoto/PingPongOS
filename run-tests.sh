@@ -27,6 +27,12 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
+DIFF_TOOL='diff --color=auto'
+
+if command -v delta; then
+    DIFF_TOOL='delta --dark --side-by-side'
+fi
+
 echo -e "${YELLOW}TESTS${NC}"
 
 for bin in $(ls $TEST_DIR/*.bin); do \
@@ -36,11 +42,12 @@ for bin in $(ls $TEST_DIR/*.bin); do \
 
     $bin > "$got"
 
+    # Here, always use diff just for the check
     diff -s "$got" "$expect" > /dev/null
 
     if [ ! "$?" = "0" ]; then
         echo -e "${RED}FAILED${NC}: ${name}"
-        diff --color=auto "$got" "$expect"
+        $DIFF_TOOL "$got" "$expect"
         continue
     fi
 
