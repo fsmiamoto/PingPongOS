@@ -5,6 +5,7 @@ LDFLAGS = --relocatable
 OBJ = ppos.o
 
 TEST_DIR= ./tests
+TEST_FLAGS= -g3 # all debug info
 
 all: ppos_core.o queue.o
 	$(LD) $(LDFLAGS) $^ -o $(OBJ)
@@ -16,7 +17,7 @@ queue.o: queue.c queue.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TEST_DIR)/%.c: all
-	$(CC) $(CFLAGS) -g $@ $(OBJ) -o $(@:.c=.bin)
+	$(CC) $(CFLAGS) -DDEBUG $(TEST_FLAGS) $@ $(OBJ) -o $(@:.c=.bin)
 
 test: $(TEST_DIR)/*.c
 	$(TEST_DIR)/bin/run-tests.sh $(TEST_DIR)

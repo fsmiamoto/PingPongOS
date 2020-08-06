@@ -9,7 +9,7 @@ Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:
 - [Queue library](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:biblioteca_de_filas)
 - [Task control](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:gestao_de_tarefas)
 - [Dispatcher](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:dispatcher)
-- [Priority Scheduler](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:escalonador_por_prioridades)
+- [Scheduler](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:escalonador_por_prioridades)
 - [Metrics](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:contabilizacao)
 - [Main Task](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:tarefa_main)
 
