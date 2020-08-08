@@ -181,45 +181,39 @@ task_t *scheduler() {
 }
 
 void dispatcher() {
-  int sleeping, waiting;
+  int sleeping_tasks;
+  task_t *next_ready;
+
   for (;;) {
     // Queue up sleeping tasks that should wake up
-    if ((sleeping = queue_size((queue_t *)queues[SLEEPING])) > 0) {
+    if ((sleeping_tasks = queue_size((queue_t *)queues[SLEEPING])) > 0) {
       task_t *task = queues[SLEEPING];
-      for (int i = 0; i < sleeping; i++) {
+      for (int i = 0; i < sleeping_tasks; i++) {
+        task_t *next = task->next;
         if (task->should_wakeup_at <= systime()) {
-          task_t *next = task->next;
           queue_remove((queue_t **)&queues[SLEEPING], (queue_t *)task);
           queue_append((queue_t **)&queues[READY], (queue_t *)task);
-          task = next;
-        } else {
-          task = task->next;
         }
+        task = next;
       }
     }
 
-    waiting = queue_size((queue_t *)queues[WAITING]);
-    task_t *next_task = scheduler();
-
-    if (sleeping == 0 && waiting == 0 && next_task == NULL) {
-      break;
-    }
-
-    if (next_task == NULL) {
+    if ((next_ready = scheduler()) == NULL) {
+      if (sleeping_tasks == 0)
+        task_exit(0);
       continue;
     }
 
-    queue_remove((queue_t **)&queues[READY], (queue_t *)next_task);
-    next_task->tick_budget = DEFAULT_TICK_BUDGET;
-    next_task->activations += 1;
-    task_switch(next_task);
-    if (next_task->next == NULL && next_task->prev == NULL)
-      queue_append((queue_t **)&queues[next_task->state], (queue_t *)next_task);
+    queue_remove((queue_t **)&queues[READY], (queue_t *)next_ready);
+    next_ready->tick_budget = DEFAULT_TICK_BUDGET;
+    next_ready->activations += 1;
+    task_switch(next_ready);
+    if (next_ready->next == NULL && next_ready->prev == NULL)
+      queue_append((queue_t **)&queues[next_ready->state],
+                   (queue_t *)next_ready);
 
     dispatcher_task.activations++;
   }
-
-  task_exit(0);
 }
 
 // Return the task with the highest priority
