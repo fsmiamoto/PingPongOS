@@ -15,8 +15,8 @@ task_t dispatcher_task;
 task_t *current_task;
 
 // Task queues for each state:
-// Created, Ready, Running, Waiting, Terminated
-task_t *queues[] = {NULL, NULL, NULL, NULL, NULL};
+// Ready, Waiting, Sleeping, Terminated
+task_t *queues[] = {NULL, NULL, NULL, NULL};
 
 struct sigaction action;
 struct itimerval timer;
@@ -55,7 +55,6 @@ int task_create(task_t *task, void (*start_routine)(void *), void *arg) {
   task->activations = 0;
   task->prev = NULL;
   task->next = NULL;
-  task->state = CREATED;
   task->prio = 0;
   task->prio_d = 0;
   task->preemptible = 1;
@@ -107,13 +106,14 @@ void task_exit(int exit_code) {
   current_task->state = TERMINATED;
   current_task->exit_code = exit_code;
 
-  // Wakeup the waiting tasks
+  // Queue up the waiting tasks
   while (queue_size((queue_t *)current_task->waiting) > 0) {
     queue_t *task = queue_remove((queue_t **)&current_task->waiting,
                                  (queue_t *)current_task->waiting);
     queue_append((queue_t **)&queues[READY], task);
   }
 
+  queue_append((queue_t **)&queues[TERMINATED], (queue_t *)current_task);
   task_switch(&dispatcher_task);
 }
 
@@ -124,11 +124,13 @@ void task_yield() {
   printf("task_yield: called from task %d\n", current_task->id);
 #endif
   current_task->state = READY;
-
   task_switch(&dispatcher_task);
 }
 
 int task_join(task_t *task) {
+  if (task->state == TERMINATED)
+    return task->exit_code;
+
   current_task->state = WAITING;
   queue_append((queue_t **)&task->waiting, (queue_t *)current_task);
   task_switch(&dispatcher_task);
@@ -155,6 +157,12 @@ int task_getprio(task_t *task) {
   return (int)task->prio;
 }
 
+void task_sleep(int t_ms) {
+  current_task->state = SLEEPING;
+  current_task->should_wakeup_at = systime() + t_ms;
+  task_switch(&dispatcher_task);
+}
+
 unsigned int systime() { return system_ticks_count; }
 
 task_t *scheduler() {
@@ -173,21 +181,42 @@ task_t *scheduler() {
 }
 
 void dispatcher() {
-  while (1) {
-    dispatcher_task.activations++;
+  int sleeping, waiting;
+  for (;;) {
+    // Queue up sleeping tasks that should wake up
+    if ((sleeping = queue_size((queue_t *)queues[SLEEPING])) > 0) {
+      task_t *task = queues[SLEEPING];
+      for (int i = 0; i < sleeping; i++) {
+        if (task->should_wakeup_at <= systime()) {
+          task_t *next = task->next;
+          queue_remove((queue_t **)&queues[SLEEPING], (queue_t *)task);
+          queue_append((queue_t **)&queues[READY], (queue_t *)task);
+          task = next;
+        } else {
+          task = task->next;
+        }
+      }
+    }
 
-    task_t *next = scheduler();
-    if (next == NULL) {
+    waiting = queue_size((queue_t *)queues[WAITING]);
+    task_t *next_task = scheduler();
+
+    if (sleeping == 0 && waiting == 0 && next_task == NULL) {
       break;
     }
 
-    queue_remove((queue_t **)&queues[READY], (queue_t *)next);
-    next->state = RUNNING;
-    next->tick_budget = DEFAULT_TICK_BUDGET;
-    next->activations += 1;
-    task_switch(next);
-    if (next->next == NULL && next->prev == NULL)
-      queue_append((queue_t **)&queues[next->state], (queue_t *)next);
+    if (next_task == NULL) {
+      continue;
+    }
+
+    queue_remove((queue_t **)&queues[READY], (queue_t *)next_task);
+    next_task->tick_budget = DEFAULT_TICK_BUDGET;
+    next_task->activations += 1;
+    task_switch(next_task);
+    if (next_task->next == NULL && next_task->prev == NULL)
+      queue_append((queue_t **)&queues[next_task->state], (queue_t *)next_task);
+
+    dispatcher_task.activations++;
   }
 
   task_exit(0);

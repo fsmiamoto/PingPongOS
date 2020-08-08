@@ -10,7 +10,7 @@
 #include "queue.h"    // biblioteca de filas genéricas
 #include <ucontext.h> // biblioteca POSIX de trocas de contexto
 
-typedef enum { CREATED, READY, RUNNING, WAITING, TERMINATED } state_t;
+typedef enum { READY, WAITING, SLEEPING, TERMINATED } state_t;
 
 // Estrutura que define um Task Control Block (TCB)
 typedef struct task_t {
@@ -25,6 +25,7 @@ typedef struct task_t {
   unsigned int tick_count;  // contagem de ticks disponíveis
   unsigned int activations;
   unsigned int start_tick;
+  unsigned int should_wakeup_at;
   struct task_t *waiting;
   int exit_code;
 
