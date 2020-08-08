@@ -25,6 +25,9 @@ typedef struct task_t {
   unsigned int tick_count;  // contagem de ticks disponíveis
   unsigned int activations;
   unsigned int start_tick;
+  struct task_t *waiting;
+  int exit_code;
+
 } task_t;
 
 // estrutura que define um semáforo

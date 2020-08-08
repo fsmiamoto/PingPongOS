@@ -105,6 +105,15 @@ void task_exit(int exit_code) {
   }
 
   current_task->state = TERMINATED;
+  current_task->exit_code = exit_code;
+
+  // Wakeup the waiting tasks
+  while (queue_size((queue_t *)current_task->waiting) > 0) {
+    queue_t *task = queue_remove((queue_t **)&current_task->waiting,
+                                 (queue_t *)current_task->waiting);
+    queue_append((queue_t **)&queues[READY], task);
+  }
+
   task_switch(&dispatcher_task);
 }
 
@@ -117,6 +126,13 @@ void task_yield() {
   current_task->state = READY;
 
   task_switch(&dispatcher_task);
+}
+
+int task_join(task_t *task) {
+  current_task->state = WAITING;
+  queue_append((queue_t **)&task->waiting, (queue_t *)current_task);
+  task_switch(&dispatcher_task);
+  return task->exit_code;
 }
 
 void task_setprio(task_t *task, int prio) {
@@ -170,7 +186,8 @@ void dispatcher() {
     next->tick_budget = DEFAULT_TICK_BUDGET;
     next->activations += 1;
     task_switch(next);
-    queue_append((queue_t **)&queues[next->state], (queue_t *)next);
+    if (next->next == NULL && next->prev == NULL)
+      queue_append((queue_t **)&queues[next->state], (queue_t *)next);
   }
 
   task_exit(0);

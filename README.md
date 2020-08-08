@@ -12,6 +12,7 @@ Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:
 - [Scheduler](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:escalonador_por_prioridades)
 - [Metrics](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:contabilizacao)
 - [Main Task](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:tarefa_main)
+- [Join Operator](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:operador_join)
 
 Each directory contains a full 'snapshot' of the OS at an implementation stage.
 
