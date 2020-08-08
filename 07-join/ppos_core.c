@@ -114,6 +114,7 @@ void task_exit(int exit_code) {
     queue_append((queue_t **)&queues[READY], task);
   }
 
+  queue_append((queue_t **)&queues[TERMINATED], (queue_t *)current_task);
   task_switch(&dispatcher_task);
 }
 
@@ -129,6 +130,8 @@ void task_yield() {
 }
 
 int task_join(task_t *task) {
+  if (task->state == TERMINATED)
+    return task->exit_code;
   current_task->state = WAITING;
   queue_append((queue_t **)&task->waiting, (queue_t *)current_task);
   task_switch(&dispatcher_task);
