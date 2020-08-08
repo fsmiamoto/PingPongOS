@@ -19,6 +19,8 @@ queue.o: queue.c queue.h
 $(TEST_DIR)/%.c: all
 	$(CC) $(CFLAGS) -DDEBUG $(TEST_FLAGS) $@ $(OBJ) -o $(@:.c=.bin)
 
+build_test: $(TEST_DIR)/*.c
+
 test: $(TEST_DIR)/*.c
 	$(TEST_DIR)/bin/run-tests.sh $(TEST_DIR)
 
