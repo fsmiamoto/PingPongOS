@@ -1,6 +1,6 @@
 # PingPong OS
 
-Repository for the development of a simple OS
+Repository for the development of a simple toy OS
 
 Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:pingpongos) provided by Prof. Carlos Maziero (UFPR)
 
@@ -13,6 +13,7 @@ Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:
 - [Metrics](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:contabilizacao)
 - [Main Task](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:tarefa_main)
 - [Join Operator](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:operador_join)
+- [Sleeping](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:sleeping)
 
 Each directory contains a full 'snapshot' of the OS at an implementation stage.
 
