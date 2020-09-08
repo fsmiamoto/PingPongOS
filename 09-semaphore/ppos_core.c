@@ -216,17 +216,17 @@ int sem_down(semaphore_t *s) {
   if (s == NULL || s->is_destroyed)
     return -1;
 
-  if (s->value == 0) {
-    current_task->state = SLEEPING;
-    queue_append((queue_t **)&s->waiting, (queue_t *)current_task);
-    task_yield();
-  }
-
   __enter_sem_cs(s);
   if (s->is_destroyed)
     return -1;
   s->value -= 1;
   __leave_sem_cs(s);
+
+  if (s->value < 0) {
+    current_task->state = WAITING;
+    queue_append((queue_t **)&s->waiting, (queue_t *)current_task);
+    task_yield();
+  }
 
   return 0;
 }
