@@ -14,6 +14,7 @@ Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:
 - [Main Task](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:tarefa_main)
 - [Join Operator](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:operador_join)
 - [Sleeping](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:sleeping)
+- [Semaphores](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:semaforos)
 
 Each directory contains a full 'snapshot' of the OS at an implementation stage.
 
