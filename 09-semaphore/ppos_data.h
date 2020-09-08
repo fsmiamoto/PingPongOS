@@ -34,6 +34,9 @@ typedef struct task_t {
 // estrutura que define um semáforo
 typedef struct {
   int value;
+  short lock;
+  short is_destroyed;
+  struct task_t *waiting;
   // preencher quando necessário
 } semaphore_t;
 
