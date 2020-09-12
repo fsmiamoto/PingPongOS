@@ -20,7 +20,7 @@ void __create_dispatcher_task();
 void __timer_tick_handler();
 void __enter_sem_cs(semaphore_t *s);
 void __leave_sem_cs(semaphore_t *s);
-void __wake_up_waiting_tasks(semaphore_t *s);
+void __wake_up_all_waiting_tasks(semaphore_t *s);
 void __wake_up_first_waiting_task(semaphore_t *s);
 
 #endif

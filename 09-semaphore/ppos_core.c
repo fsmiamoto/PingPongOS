@@ -186,7 +186,7 @@ int sem_destroy(semaphore_t *s) {
 
   s->is_destroyed = 1;
 
-  __wake_up_waiting_tasks(s);
+  __wake_up_all_waiting_tasks(s);
 
   return 0;
 }
@@ -201,10 +201,12 @@ int sem_up(semaphore_t *s) {
   __enter_sem_cs(s);
   if (s->is_destroyed)
     return -1;
-  s->value += 1;
-  __leave_sem_cs(s);
 
-  __wake_up_first_waiting_task(s);
+  s->value += 1;
+  if (s->waiting != NULL)
+    __wake_up_first_waiting_task(s);
+
+  __leave_sem_cs(s);
 
   return 0;
 }
@@ -219,7 +221,9 @@ int sem_down(semaphore_t *s) {
   __enter_sem_cs(s);
   if (s->is_destroyed)
     return -1;
+
   s->value -= 1;
+
   __leave_sem_cs(s);
 
   if (s->value < 0) {
@@ -384,7 +388,7 @@ void __leave_sem_cs(semaphore_t *s) {
   s->lock = 0;
 }
 
-void __wake_up_waiting_tasks(semaphore_t *s) {
+void __wake_up_all_waiting_tasks(semaphore_t *s) {
   int waiting_tasks = queue_size((queue_t *)s->waiting);
 
   if (waiting_tasks == 0)
@@ -400,10 +404,6 @@ void __wake_up_waiting_tasks(semaphore_t *s) {
 }
 
 void __wake_up_first_waiting_task(semaphore_t *s) {
-  if (s->waiting == NULL)
-    return;
-
-  task_t *waiting_task =
-      (task_t *)queue_remove((queue_t **)&s->waiting, (queue_t *)s->waiting);
-  queue_append((queue_t **)&queues[READY], (queue_t *)waiting_task);
+  queue_append((queue_t **)&queues[READY],
+               queue_remove((queue_t **)&s->waiting, (queue_t *)s->waiting));
 }
