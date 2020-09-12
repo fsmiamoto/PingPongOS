@@ -40,7 +40,8 @@ for bin in $(ls $TEST_DIR/*.bin); do \
     got="$name.output.txt"
     expect="$name.expect.txt"
 
-    $bin > "$got"
+    echo "Running $name..."
+    $bin | tee "$got"
 
     # Here, always use diff just for the check
     diff -s "$got" "$expect" > /dev/null
