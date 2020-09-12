@@ -32,5 +32,7 @@ void __enter_sem_cs(semaphore_t *s);
 void __leave_sem_cs(semaphore_t *s);
 void __wake_up_all_waiting_tasks(semaphore_t *s);
 void __wake_up_first_waiting_task(semaphore_t *s);
+unsigned int __queue_up_tasks_that_should_wake_up();
+unsigned short __is_in_another_queue(task_t *t);
 
 #endif

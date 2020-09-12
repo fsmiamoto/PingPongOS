@@ -126,3 +126,32 @@ void __set_up_signals() {
     exit(1);
   }
 }
+
+unsigned int __queue_up_tasks_that_should_wake_up() {
+  int sleeping_tasks;
+  if ((sleeping_tasks = queue_size((queue_t *)queues[SLEEPING])) <= 0) {
+    return 0;
+  }
+
+  int still_sleeping = 0;
+
+  task_t *task = queues[SLEEPING];
+  for (int i = 0; i < sleeping_tasks; i++) {
+    task_t *next = task->next;
+    if (task->should_wakeup_at <= systime()) {
+      queue_remove((queue_t **)&queues[SLEEPING], (queue_t *)task);
+      queue_append((queue_t **)&queues[READY], (queue_t *)task);
+    } else {
+      still_sleeping += 1;
+    }
+    task = next;
+  }
+
+  return still_sleeping;
+}
+
+unsigned short __is_in_another_queue(task_t *t) {
+  if (t->next == NULL && t->prev == NULL)
+    return 0;
+  return 1;
+}
