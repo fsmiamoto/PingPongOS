@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall
+CFLAGS = -Wall -g3
 LD = ld
 LDFLAGS = --relocatable
 OBJ = ppos.o
@@ -17,6 +17,9 @@ $(TEST_DIR)/%.c: all
 	$(CC) $(CFLAGS) -DDEBUG $(TEST_FLAGS) $@ $(OBJ) -o $(@:.c=.bin)
 
 build_test: $(TEST_DIR)/*.c
+
+prodcons: all
+	$(CC) $(CFLAGS) $(OBJ) prodcons.c -o prodcons
 
 test: $(TEST_DIR)/*.c
 	$(TEST_DIR)/bin/run-tests.sh $(TEST_DIR)
