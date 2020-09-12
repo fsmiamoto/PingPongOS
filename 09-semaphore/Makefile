@@ -7,13 +7,10 @@ OBJ = ppos.o
 TEST_DIR= ./tests
 TEST_FLAGS= -g3 # all debug info
 
-all: ppos_core.o queue.o
+all: ppos_core.o ppos_internal.o queue.o
 	$(LD) $(LDFLAGS) $^ -o $(OBJ)
 
-ppos_core.o: ppos_core.c ppos.h ppos_data.h ppos_internal.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-queue.o: queue.c queue.h
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TEST_DIR)/%.c: all

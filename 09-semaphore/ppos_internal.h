@@ -8,8 +8,18 @@
 #define SCHEDULER_AGING_ALPHA 1
 #define DEFAULT_TICK_BUDGET 20
 
-task_t *scheduler();
-void dispatcher();
+extern task_t *scheduler();
+extern void dispatcher();
+
+extern task_t *queues[];
+extern task_t main_task;
+extern task_t dispatcher_task;
+extern task_t *current_task;
+
+extern struct sigaction action;
+extern struct itimerval timer;
+
+extern unsigned int system_ticks_count;
 
 void *__highest_prio_task(void *prev, void *next);
 void __apply_aging(void *ptr);
