@@ -7,7 +7,7 @@ OBJ = ppos.o
 TEST_DIR= ./tests
 TEST_FLAGS= -g3 # all debug info
 
-all: ppos_core.o ppos_internal.o queue.o
+all: ppos_core.o ppos_internal.o ppos_ipc.o queue.o 
 	$(LD) $(LDFLAGS) $^ -o $(OBJ)
 
 %.o: %.c
