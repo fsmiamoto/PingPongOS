@@ -18,9 +18,7 @@ int sem_down(semaphore_t *s) {
   __leave_sem_cs(s);
 
   if (s->value < 0) {
-    current_task->state = WAITING;
-    queue_append((queue_t **)&s->waiting, (queue_t *)current_task);
-    task_yield();
+    __wait_in_semaphore_queue(s);
   }
 
   return 0;

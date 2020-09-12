@@ -155,3 +155,9 @@ unsigned short __is_in_another_queue(task_t *t) {
     return 0;
   return 1;
 }
+
+void __wait_in_semaphore_queue(semaphore_t *s) {
+  current_task->state = WAITING;
+  queue_append((queue_t **)&s->waiting, (queue_t *)current_task);
+  task_yield();
+}
