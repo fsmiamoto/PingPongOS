@@ -1,6 +1,13 @@
 #include "ppos.h"
 #include "ppos_data.h"
 #include "ppos_internal.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define check(x)                                                               \
+  if (x)                                                                       \
+    return -1;
 
 int sem_down(semaphore_t *s) {
 #ifdef DEBUG
@@ -68,4 +75,65 @@ int sem_up(semaphore_t *s) {
   __leave_sem_cs(s);
 
   return 0;
+}
+
+int mqueue_create(mqueue_t *queue, int max, int size) {
+  queue->msg_size = size;
+  queue->capacity = max;
+  queue->length = 0;
+  queue->is_destroyed = 0;
+  queue->tail = queue->head = 0;
+
+  check(sem_create(&queue->prod_sem, max));
+  check(sem_create(&queue->cons_sem, 0));
+  check(sem_create(&queue->mutex, 1));
+  check((queue->buffer = malloc(max * size)) == NULL);
+
+  return 0;
+}
+
+int mqueue_send(mqueue_t *queue, void *msg) {
+  check(queue == NULL || queue->is_destroyed);
+
+  check(sem_down(&queue->prod_sem));
+
+  check(sem_down(&queue->mutex));
+  memcpy(queue->buffer + (queue->msg_size * queue->head), msg, queue->msg_size);
+  queue->head = (queue->head + 1) % queue->capacity;
+  queue->length += 1;
+  check(sem_up(&queue->mutex));
+
+  check(sem_up(&queue->cons_sem));
+
+  return 0;
+}
+
+int mqueue_recv(mqueue_t *queue, void *msg) {
+  check(queue == NULL || queue->is_destroyed);
+
+  check(sem_down(&queue->cons_sem));
+
+  check(sem_down(&queue->mutex));
+  memcpy(msg, queue->buffer + (queue->msg_size * queue->tail), queue->msg_size);
+  queue->tail = (queue->tail + 1) % queue->capacity;
+  queue->length -= 1;
+  check(sem_up(&queue->mutex));
+
+  check(sem_up(&queue->prod_sem));
+
+  return 0;
+}
+
+int mqueue_destroy(mqueue_t *queue) {
+  queue->is_destroyed = 1;
+  check(sem_destroy(&queue->mutex));
+  check(sem_destroy(&queue->prod_sem));
+  check(sem_destroy(&queue->cons_sem));
+
+  return 0;
+}
+
+int mqueue_msgs(mqueue_t *queue) {
+  check(queue == NULL || queue->is_destroyed);
+  return queue->length;
 }

@@ -52,7 +52,16 @@ typedef struct {
 
 // estrutura que define uma fila de mensagens
 typedef struct {
-  // preencher quando necessário
+  semaphore_t mutex;
+  semaphore_t prod_sem;
+  semaphore_t cons_sem;
+  char *buffer;
+  short is_destroyed;
+  int msg_size;
+  int capacity;
+  int length;
+  int head;
+  int tail;
 } mqueue_t;
 
 #endif

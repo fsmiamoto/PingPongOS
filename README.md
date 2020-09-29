@@ -17,6 +17,7 @@ Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:
 - [Sleeping](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:sleeping)
 - [Semaphores](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:semaforos)
 - [Producer-Consumer](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:uso_de_semaforos)
+- [Message Queue](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:filas_de_mensagens)
 
 Each directory contains a full 'snapshot' of the OS at an implementation stage.
 

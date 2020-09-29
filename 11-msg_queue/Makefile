@@ -5,7 +5,7 @@ LDFLAGS = --relocatable
 OBJ = ppos.o
 
 TEST_DIR= ./tests
-TEST_FLAGS= -g3 # all debug info
+TEST_FLAGS= -g3 -lm # all debug info
 
 all: ppos_core.o ppos_internal.o ppos_ipc.o queue.o 
 	$(LD) $(LDFLAGS) $^ -o $(OBJ)
@@ -17,9 +17,6 @@ $(TEST_DIR)/%.c: all
 	$(CC) $(CFLAGS) -DDEBUG $(TEST_FLAGS) $@ $(OBJ) -o $(@:.c=.bin)
 
 build_test: $(TEST_DIR)/*.c
-
-prodcons: all
-	$(CC) $(CFLAGS) $(OBJ) prodcons.c -o prodcons
 
 test: $(TEST_DIR)/*.c
 	$(TEST_DIR)/bin/run-tests.sh $(TEST_DIR)
