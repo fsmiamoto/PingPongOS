@@ -18,6 +18,7 @@ Based on the [excelent material](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:
 - [Semaphores](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:semaforos)
 - [Producer-Consumer](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:uso_de_semaforos)
 - [Message Queue](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:filas_de_mensagens)
+- [Barrier](http://wiki.inf.ufpr.br/maziero/doku.php?id=so:operador_barreira)
 
 Each directory contains a full 'snapshot' of the OS at an implementation stage.
 
