@@ -55,7 +55,7 @@ int sem_destroy(semaphore_t *s) {
 
   s->is_destroyed = 1;
 
-  __wake_up_all_waiting_tasks(s);
+  __move_to_ready_queue(s->waiting);
 
   return 0;
 }
@@ -100,7 +100,7 @@ int barrier_join(barrier_t *b) {
   b->current_count += 1;
 
   if (b->current_count == b->expected_count) {
-    __wake_up_barrier_tasks(b);
+    __move_to_ready_queue(b->waiting);
     check(sem_up(&(b->mutex)));
     return 0;
   }

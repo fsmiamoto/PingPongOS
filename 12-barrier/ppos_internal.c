@@ -10,31 +10,16 @@ void __wake_up_first_waiting_task(semaphore_t *s) {
                queue_remove((queue_t **)&s->waiting, (queue_t *)s->waiting));
 }
 
-void __wake_up_all_waiting_tasks(semaphore_t *s) {
-  int waiting_tasks = queue_size((queue_t *)s->waiting);
+void __move_to_ready_queue(task_t *queue) {
+  int num_of_tasks = queue_size((queue_t *)queue);
 
-  if (waiting_tasks == 0)
+  if (num_of_tasks == 0)
     return;
 
-  task_t *task = s->waiting;
-  for (int i = 0; i < waiting_tasks; i++) {
+  task_t *task = queue;
+  for (int i = 0; i < num_of_tasks; i++) {
     task_t *next = task->next;
-    queue_remove((queue_t **)&s->waiting, (queue_t *)task);
-    queue_append((queue_t **)&queues[READY], (queue_t *)task);
-    task = next;
-  }
-}
-
-void __wake_up_barrier_tasks(barrier_t *b) {
-  int waiting_tasks = queue_size((queue_t *)b->waiting);
-
-  if (waiting_tasks == 0)
-    return;
-
-  task_t *task = b->waiting;
-  for (int i = 0; i < waiting_tasks; i++) {
-    task_t *next = task->next;
-    queue_remove((queue_t **)&b->waiting, (queue_t *)task);
+    queue_remove((queue_t **)&queue, (queue_t *)task);
     queue_append((queue_t **)&queues[READY], (queue_t *)task);
     task = next;
   }
