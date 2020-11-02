@@ -93,7 +93,7 @@ void task_exit(int exit_code) {
   printf("task_exit: exiting task %d\n", current_task->id);
 #endif
 
-  printf("Task %d exit: running time %4d ms, cpu time %2d ms, %d "
+  printf("Task %d exit: running time %4d ms, cpu time %5d ms, %d "
          "activations\n",
          current_task->id, systime() - current_task->start_tick,
          current_task->tick_count, current_task->activations);
