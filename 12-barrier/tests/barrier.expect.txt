@@ -1,0 +1,36 @@
+    0 ms: main: inicio
+    0 ms: main: chega na barreira
+    0 ms:     Pang: inicio
+    0 ms:     Pang: dorme 9383s
+    0 ms:         Peng: inicio
+    0 ms:         Peng: dorme 10886s
+    0 ms:             Ping: inicio
+    0 ms:             Ping: dorme 12777s
+    0 ms:                 Pong: inicio
+    0 ms:                 Pong: dorme 16915s
+    0 ms:                     Pung: inicio
+    0 ms:                     Pung: dorme 7793s
+ 7793 ms:                     Pung: chega na barreira
+ 9383 ms:     Pang: chega na barreira
+10886 ms:         Peng: chega na barreira
+12777 ms:             Ping: chega na barreira
+16915 ms:                 Pong: chega na barreira
+16915 ms:                 Pong: passa da barreira
+16915 ms:                 Pong: fim
+Task 5 exit: running time 16915 ms, cpu time     0 ms, 2 activations
+16915 ms: main: passa da barreira
+16915 ms: main: fim
+Task 0 exit: running time 16915 ms, cpu time     0 ms, 2 activations
+16915 ms:                     Pung: passa da barreira
+16915 ms:                     Pung: fim
+Task 6 exit: running time 16915 ms, cpu time     0 ms, 3 activations
+16915 ms:     Pang: passa da barreira
+16915 ms:     Pang: fim
+Task 2 exit: running time 16915 ms, cpu time     0 ms, 3 activations
+16915 ms:         Peng: passa da barreira
+16915 ms:         Peng: fim
+Task 3 exit: running time 16915 ms, cpu time     0 ms, 3 activations
+16915 ms:             Ping: passa da barreira
+16915 ms:             Ping: fim
+Task 4 exit: running time 16915 ms, cpu time     0 ms, 3 activations
+Task 1 exit: running time 16915 ms, cpu time 16915 ms, 16 activations
