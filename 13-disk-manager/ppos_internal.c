@@ -10,6 +10,11 @@ void __wake_up_first_waiting_task(semaphore_t *s) {
                queue_remove((queue_t **)&s->waiting, (queue_t *)s->waiting));
 }
 
+void __wake_up_first__task(queue_t *q) {
+  queue_append((queue_t **)&queues[READY],
+               queue_remove((queue_t **)&q, (queue_t *)q));
+};
+
 void __move_to_ready_queue(task_t *queue) {
   int num_of_tasks = queue_size((queue_t *)queue);
 
@@ -118,10 +123,10 @@ void __set_up_timer() {
 }
 
 void __set_up_signals() {
-  action.sa_handler = __timer_tick_handler;
-  sigemptyset(&action.sa_mask);
-  action.sa_flags = 0;
-  if (sigaction(SIGALRM, &action, 0) < 0) {
+  sig.sa_handler = __timer_tick_handler;
+  sigemptyset(&sig.sa_mask);
+  sig.sa_flags = 0;
+  if (sigaction(SIGALRM, &sig, 0) < 0) {
     perror("sigaction");
     exit(1);
   }

@@ -16,7 +16,7 @@ extern task_t main_task;
 extern task_t dispatcher_task;
 extern task_t *current_task;
 
-extern struct sigaction action;
+extern struct sigaction sig;
 extern struct itimerval timer;
 
 extern unsigned int system_ticks_count;
@@ -31,6 +31,7 @@ void __timer_tick_handler();
 void __enter_sem_cs(semaphore_t *s);
 void __leave_sem_cs(semaphore_t *s);
 void __wake_up_first_waiting_task(semaphore_t *s);
+void __wake_up_first_task(queue_t *q);
 void __move_to_ready_queue(task_t *queue);
 unsigned int __queue_up_tasks_that_should_wake_up();
 unsigned short __is_in_another_queue(task_t *t);

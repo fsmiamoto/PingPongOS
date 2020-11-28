@@ -183,10 +183,11 @@ task_t *scheduler() {
 void dispatcher() {
   for (;;) {
     int sleeping_tasks = __queue_up_tasks_that_should_wake_up();
+    int waiting_tasks = queue_size((queue_t *)queues[WAITING]);
 
     task_t *task = scheduler();
     if (task == NULL) {
-      if (sleeping_tasks == 0)
+      if (sleeping_tasks == 0 && waiting_tasks == 0)
         task_exit(0);
       else
         continue;
